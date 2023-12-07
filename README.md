@@ -17,7 +17,7 @@ Each output json file holds the states the claw arm must execute to pick up and 
 
 ### Node Execution
 
-`ros2 run motion_planner planner <"path/to/json/folder"> <"json-file-name">
+`ros2 run motion_planner planner <"path/to/json/folder"> <"json_file_name.json">
 `
 
 A json file called 'prize_data.json' is currently in the json folder to serve as an example. To run the node with the current json input from the top level folder:
@@ -26,3 +26,7 @@ A json file called 'prize_data.json' is currently in the json folder to serve as
 `
 
 The output json files for each prize are called 'step_data_prize_[i].json' with i being the prize number.
+
+### Assumptions
+1. The order in which the prizes are picked is up to the programmer.
+2. Time taken to execute a state is rounded up to the nearest integer.
