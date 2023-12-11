@@ -41,3 +41,4 @@ In a separate terminal:
 
 `ros2 launch state_visualizer state_publisher.launch.py`
 
+[Robot Arm - Prize Picker](https://drive.google.com/file/d/1SYi0tlsC_A3laO5mkHQMIF5b8Rje9ViC/view?usp=drive_link)
