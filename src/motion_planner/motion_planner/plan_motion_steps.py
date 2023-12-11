@@ -23,25 +23,12 @@ class PlanMotionSteps(Node):
         with open(full_path, 'r') as f:
             prize_dict = json.load(f)
             self.prize_data = prize_dict["prizes"]
-
+        
         self.get_logger().info(f"{self.prize_data = }")
 
-
-    def parse_and_sort_prize_data(self):
-        '''
-            Sorts prize data in order from highest in the bin to lowest in the bin and appends 
-            custom prize objects to a global list in said order.
-        '''
-
-        z_values = [prize["position"]["z"] for prize in self.prize_data]
-
-        z_values.sort(reverse=True)
-
-        for value in z_values:
-            for i in range(len(self.prize_data)):
-                if self.prize_data[i]["position"]["z"] == value:
-                    prize_object = self.make_prize_object(self.prize_data[i], i)
-                    self.prize_objects.append(prize_object)
+        for i in range(len(self.prize_data)):
+            prize_object = self.make_prize_object(self.prize_data[i], i)
+            self.prize_objects.append(prize_object)
 
 
     def make_prize_object(self, prize_data : dict, index):
@@ -96,8 +83,6 @@ def main(args=None):
     json_file_name = args[2]
     
     node = PlanMotionSteps(json_path=json_file_path, json_file_name=json_file_name)
-    
-    node.parse_and_sort_prize_data()
 
     node.plan_steps()
 
