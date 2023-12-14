@@ -1,5 +1,5 @@
 from motion_planner.utils import Prize
-from motion_planner.motion_state import MotionState, DropoffStandoffState
+from motion_planner.motion_state import MotionState
 
 
 class MotionPlan():
@@ -19,7 +19,6 @@ class MotionPlan():
     def total_elapsed_time(self):
         return self._total_elapsed_time
 
-    
     def plan_states(self):
 
         MotionState.prize = self.prize
@@ -35,9 +34,7 @@ class MotionPlan():
             next_state = current_state.get_next_motion_state()
             current_state = next_state
 
-
         self._update_total_elapsed_time()
-
 
     def _update_total_elapsed_time(self):
         total = 0
