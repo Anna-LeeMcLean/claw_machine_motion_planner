@@ -34,16 +34,18 @@ class PlanMotionSteps(Node):
             Sorts prize data in order from highest in the bin to lowest in the bin and appends 
             custom prize objects to a global list in said order.
         '''
+        
+        z_values_dict = {}
 
-        z_values = [prize["position"]["z"] for prize in self.prize_data]
+        for i in range(len(self.prize_data)):
+            # prize_dict = { prize z value : (prize data, prize index) }
+            prize_dict = {self.prize_data[i]["position"]["z"] : (self.prize_data[i], i)}
 
-        z_values.sort(reverse=True)
+            z_values_dict.update(prize_dict)
 
-        for value in z_values:
-            for i in range(len(self.prize_data)):
-                if self.prize_data[i]["position"]["z"] == value:
-                    prize_object = self.make_prize_object(self.prize_data[i], i)
-                    self.prize_objects.append(prize_object)
+        z_values_dict_sorted = dict(sorted(z_values_dict.items(), reverse=True))
+
+        self.prize_objects = [self.make_prize_object(prize_data[0], prize_data[1]) for prize_data in z_values_dict_sorted.values()]
 
 
     def make_prize_object(self, prize_data : dict, index):
