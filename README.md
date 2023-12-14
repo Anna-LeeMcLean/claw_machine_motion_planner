@@ -1,6 +1,6 @@
 # ros2_challenge
 
-## This challenge uses ROS2 to create a motion plan for a claw arm that picks up and drops off prizes from a bin.
+## This challenge uses ROS2 Foxy to create a motion plan for a claw arm that picks up and drops off prizes from a bin.
 
 ### Setup Instructions
 `git clone https://github.com/Anna-LeeMcLean/ros2_challenge.git`
@@ -17,7 +17,7 @@ Each output json file holds the states the claw arm must execute to pick up and 
 
 ### Node Execution
 
-`ros2 run motion_planner planner <"path/to/json/folder"> <"json_file_name.json">
+`ros2 run motion_planner planner "<path/to/json/folder/>" "<json_file_name.json>"
 `
 
 A json file called 'prize_data.json' is currently in the json folder to serve as an example. To run the node with the current json input from the top level folder:
