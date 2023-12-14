@@ -211,10 +211,18 @@ class DropoffStandoffState(TranslationState):
         super().__init__(prev_motion_state)
 
     def set_elapsed_time(self):
-        return super().set_elapsed_time()
+        if self.previous_motion_state is None:
+            # Restarting a new motion plan
+            self.elapsed_time = 0
+        else:
+            super().set_elapsed_time()
 
     def set_claw_state(self):
-        return super().set_claw_state()
+        if self.previous_motion_state is None:
+            # Restarting a new motion plan
+            self.claw_state = True
+        else:
+            super().set_claw_state()
     
     def set_position(self):
         self.position = Point(x=DROPOFF_POINT_X, 
@@ -223,7 +231,10 @@ class DropoffStandoffState(TranslationState):
     
     def get_next_motion_state(self) -> MotionState:
 
-        if self.previous_motion_state.claw_state:
+        if self.previous_motion_state is None:
+            # Restarting a new motion plan
+            self.next_motion_state = PrizeStandoffState(prev_motion_state=self)
+        elif self.previous_motion_state.claw_state:
             self.next_motion_state = None
         else:
             self.next_motion_state = DropoffCentroidState(prev_motion_state=self)

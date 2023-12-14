@@ -1,13 +1,14 @@
 from motion_planner.utils import Prize
-from motion_planner.motion_state import MotionState, StartState
+from motion_planner.motion_state import MotionState, DropoffStandoffState
 
 
 class MotionPlan():
 
-    def __init__(self, prize:Prize) -> None:
+    def __init__(self, prize:Prize, starting_state: MotionState = None) -> None:
 
         self._total_elapsed_time = 0 
         self.prize = prize
+        self._starting_state = starting_state
         self._states : list[MotionState] = []
     
     @property
@@ -23,7 +24,7 @@ class MotionPlan():
 
         MotionState.prize = self.prize
 
-        current_state = StartState()
+        current_state = self._starting_state
         next_state = current_state.get_next_motion_state()
         
         while next_state != None:

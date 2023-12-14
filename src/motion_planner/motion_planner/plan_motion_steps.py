@@ -6,7 +6,9 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Point
 
-from motion_planner.motion_plan import MotionPlan, Prize
+from motion_planner.utils import Prize
+from motion_planner.motion_state import StartState, DropoffStandoffState
+from motion_planner.motion_plan import MotionPlan
 
 
 class PlanMotionSteps(Node):
@@ -58,10 +60,14 @@ class PlanMotionSteps(Node):
     
 
     def plan_steps(self):
+
+        starting_state = StartState()
+        ending_state = DropoffStandoffState()
+
         for prize in self.prize_objects:
 
             self.get_logger().info(f"{prize = }")
-            prize_planner = MotionPlan(prize=prize)
+            prize_planner = MotionPlan(prize=prize, starting_state=starting_state)
 
             prize_planner.plan_states()
 
@@ -74,6 +80,8 @@ class PlanMotionSteps(Node):
             self.get_logger().info(f"{step_data = }")
 
             self._make_json_object(data=step_data)
+
+            starting_state = ending_state
 
 
     def _make_json_object(self, data: dict):
@@ -101,7 +109,8 @@ def main(args=None):
 
     node.plan_steps()
 
+    rclpy.shutdown()
+
     
 if __name__ == '__main__':
     main()
-    
