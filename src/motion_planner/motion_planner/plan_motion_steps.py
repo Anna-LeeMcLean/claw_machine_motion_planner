@@ -6,7 +6,9 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Point
 
-from motion_planner.motion_plan import MotionPlan, Prize
+from motion_planner.utils import Prize
+from motion_planner.motion_state import StartState, DropoffStandoffState
+from motion_planner.motion_plan import MotionPlan
 
 
 class PlanMotionSteps(Node):
@@ -26,10 +28,15 @@ class PlanMotionSteps(Node):
         
         self.get_logger().info(f"{self.prize_data = }")
 
+    def parse_and_sort_prize_data(self):
+        '''
+            Sorts prize data in order from highest in the bin to lowest in the bin and appends 
+            custom prize objects to a global list in said order.
+        '''
+
         for i in range(len(self.prize_data)):
             prize_object = self.make_prize_object(self.prize_data[i], i)
             self.prize_objects.append(prize_object)
-
 
     def make_prize_object(self, prize_data : dict, index):
         centroid = Point(x = prize_data["position"]["x"],
@@ -43,12 +50,15 @@ class PlanMotionSteps(Node):
         prize = Prize(centroid=centroid, bounding_box=bounding_box, index=index)
         return prize
     
-
     def plan_steps(self):
+
+        starting_state = StartState()
+        ending_state = DropoffStandoffState()
+
         for prize in self.prize_objects:
 
             self.get_logger().info(f"{prize = }")
-            prize_planner = MotionPlan(prize=prize)
+            prize_planner = MotionPlan(prize=prize, starting_state=starting_state)
 
             prize_planner.plan_states()
 
@@ -62,6 +72,7 @@ class PlanMotionSteps(Node):
 
             self._make_json_object(data=step_data)
 
+            starting_state = ending_state
 
     def _make_json_object(self, data: dict):
         json_file_name = f'step_data_prize_{data["prize_picked"]}.json'
@@ -71,7 +82,6 @@ class PlanMotionSteps(Node):
         with open(full_path, "w") as f:
             json.dump(data, f)
     
-
 def main(args=None):
 
     if args is None:
@@ -85,6 +95,8 @@ def main(args=None):
     node = PlanMotionSteps(json_path=json_file_path, json_file_name=json_file_name)
 
     node.plan_steps()
+
+    rclpy.shutdown()
 
     
 if __name__ == '__main__':
