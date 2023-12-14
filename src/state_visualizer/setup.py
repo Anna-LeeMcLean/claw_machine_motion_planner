@@ -2,7 +2,7 @@ import os
 from glob import glob
 from setuptools import setup
 
-package_name = 'motion_planner'
+package_name = 'state_visualizer'
 
 setup(
     name=package_name,
@@ -12,7 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name, 'json'), glob(os.path.join('json', '*json*'))),
+        (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*launch.[pxy][yma]*'))),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -23,7 +23,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-        				'planner = motion_planner.plan_motion_steps:main',
+        				'joint_command_publisher = state_visualizer.state_publisher:main',
+        				'prize_marker_publisher = state_visualizer.visualize_prizes:main',
         ],
     },
 )

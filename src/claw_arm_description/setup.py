@@ -2,7 +2,7 @@ import os
 from glob import glob
 from setuptools import setup
 
-package_name = 'motion_planner'
+package_name = 'claw_arm_description'
 
 setup(
     name=package_name,
@@ -12,7 +12,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name, 'json'), glob(os.path.join('json', '*json*'))),
+        (os.path.join('share', package_name, 'urdf'), glob(os.path.join('urdf', '*'))),
+        (os.path.join('share', package_name, 'rviz_config'), glob(os.path.join('rviz_config', '*rviz*'))),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -23,7 +24,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-        				'planner = motion_planner.plan_motion_steps:main',
         ],
     },
 )
