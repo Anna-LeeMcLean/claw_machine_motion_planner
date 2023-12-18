@@ -11,7 +11,6 @@ from queue import SimpleQueue
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
-from visualization_msgs.msg import Marker
 
 OPEN_CLAW_DISTANCE = 0.3                    # width between claw fingers. this is the travel distance needed to fully open the claw based on the URDF
 CLOSED_CLAW_DISTANCE = 0.0
@@ -29,8 +28,11 @@ class StatePublisher(Node):
         self.step_data = []
         self.prize_data = []
 
-        # Parse json data and populate the two attributes above
-        self._parse_json_data(json_path=json_path)
+        # Open json data and populate the two attributes above
+        self._get_prize_and_step_json_data(json_path=json_path)
+
+        # Sort step data
+        self._sort_json_data()
 
         self.get_logger().info(f"{self.step_data = }")
 
@@ -54,7 +56,7 @@ class StatePublisher(Node):
         self.get_logger().info("Set initial claw arm position.")
         
 
-    def _parse_json_data(self, json_path):
+    def _get_prize_and_step_json_data(self, json_path):
 
         for filename in os.listdir(path=json_path):
             if "step_data" in filename:
@@ -70,7 +72,19 @@ class StatePublisher(Node):
                     for prize in prize_data["prizes"]:
                       self.prize_data.append(prize)
 
-        
+    def _sort_json_data(self):
+
+        step_data_dict = {}
+
+        for step_data in self.step_data:
+            corresponding_prize = self.prize_data[step_data["prize_picked"]]
+            prize_z = corresponding_prize["position"]["z"]
+            step_data_dict.update({prize_z: step_data})
+
+        step_data_sorted = dict(sorted(step_data_dict.items(), reverse=True))
+        self.step_data = [step_data for step_data in step_data_sorted.values()]
+
+
     def timer_callback(self):
 
         if not self.joint_state_commands.empty():
@@ -79,7 +93,7 @@ class StatePublisher(Node):
         else:
             # Joint states are added to the queue and then the node spins. 
             # Therefore this queue should be fully populated before getting states from it.
-            self.get_logger().info(f"Nothing in the joint state command queue.")
+            self.get_logger().info(f"All joint commands published.")
         
 
     def _create_and_add_joint_states_to_queue(self, current_state_data:dict, previous_state_data:dict) -> None:
@@ -189,32 +203,6 @@ class StatePublisher(Node):
         joint_state.name = self.joint_names
 
         return joint_state
-        
-
-    def sort_json_data(self):
-        '''
-          Sorts prize data in order from highest in the bin to lowest in the bin and appends 
-          custom prize objects to a global list in said order.
-        '''
-        sorted_prize_data = []
-        sorted_step_data = [None] * len(self.step_data)
-        z_values = [prize["position"]["z"] for prize in self.prize_data]
-
-        z_values.sort(reverse=True)
-
-        for value in z_values:
-            for i in range(len(self.prize_data)):
-                if self.prize_data[i]["position"]["z"] == value:
-                    sorted_prize_data.append(self.prize_data[i])
-
-        for step_data in self.step_data:
-            prize = self.prize_data[step_data["prize_picked"]]
-            idx = sorted_prize_data.index(prize)
-            sorted_step_data[idx] = step_data
-
-        self.prize_data = sorted_prize_data
-        self.step_data = sorted_step_data
-
 
     def create_joint_commands(self):
         
@@ -237,7 +225,6 @@ def main(args=None):
     json_file_path = args[1]
 
     state_publisher = StatePublisher(json_path=json_file_path)
-    state_publisher.sort_json_data()
     state_publisher.create_joint_commands()
 
     rclpy.spin(state_publisher)
@@ -248,103 +235,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
-
-'''
-header:
-  stamp:
-    sec: 1702006331
-    nanosec: 790978759
-  frame_id: ''
-name:
-- base_to_link1
-- link1_to_link2
-- link2_to_link3
-- claw_leg1_to_claw_leg2
-position:
-- 0.0
-- 0.0
-- 0.0
-- 0.0
-velocity: []
-effort: []
-
-'''
-
-'''
-- base_to_link1 -> x
-- link1_to_link2 -> y
-- link2_to_link3 -> -z
-- claw_leg1_to_claw_leg2 -> -x
-'''
-
-'''
-
-transforms:
-- header:
-    stamp:
-      sec: 1702076686
-      nanosec: 171013926
-    frame_id: base_link
-  child_frame_id: link_1
-  transform:
-    translation:
-      x: 0.0
-      y: 0.0
-      z: 1.0
-    rotation:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-      w: 1.0
-- header:
-    stamp:
-      sec: 1702076686
-      nanosec: 171013926
-    frame_id: claw_leg1
-  child_frame_id: claw_leg2
-  transform:
-    translation:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    rotation:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-      w: 1.0
-- header:
-    stamp:
-      sec: 1702076686
-      nanosec: 171013926
-    frame_id: link_1
-  child_frame_id: link_2
-  transform:
-    translation:
-      x: 1.0
-      y: 0.0
-      z: 0.0
-    rotation:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-      w: 1.0
-- header:
-    stamp:
-      sec: 1702076686
-      nanosec: 171013926
-    frame_id: link_2
-  child_frame_id: link_3
-  transform:
-    translation:
-      x: 0.0
-      y: 1.0
-      z: 0.0
-    rotation:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-      w: 1.0
----
-
-'''

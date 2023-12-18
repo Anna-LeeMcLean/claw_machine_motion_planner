@@ -6,7 +6,6 @@ import sys
 import json
 import random
 import numpy as np
-from queue import SimpleQueue
 
 import rclpy
 from rclpy.node import Node
@@ -37,7 +36,7 @@ class VisualizePrizes(Node):
         self._sort_json_data()
 
         # Update current prize being picked
-        self.current_prize_id = 0
+        self.current_prize_idx = 0
         self._update_current_prize_being_picked()
 
         # Create marker publisher
@@ -69,25 +68,15 @@ class VisualizePrizes(Node):
 
 
     def _sort_json_data(self):
-        '''
-            Sorts prize data in order from highest in the bin to lowest in the bin.
-        '''
-        sorted_prize_data = []
-        z_values = [prize["position"]["z"] for prize in self.prize_data]
 
-        z_values.sort(reverse=True)
-
-        for value in z_values:
-            for i in range(len(self.prize_data)):
-                if self.prize_data[i]["position"]["z"] == value:
-                    sorted_prize_data.append(self.prize_data[i])
-
-        self.prize_data = sorted_prize_data
+        z_values_dict = {prize["position"]["z"] : prize for prize in self.prize_data}
+        z_values_dict_sorted = dict(sorted(z_values_dict.items(), reverse=True))
+        self.prize_data = [prize for prize in z_values_dict_sorted.values()]
 
 
     def _update_current_prize_being_picked(self):
-        if self.current_prize_id < len(self.prize_data):
-          current_prize = self.prize_data[self.current_prize_id]
+        if self.current_prize_idx < len(self.prize_data):
+          current_prize = self.prize_data[self.current_prize_idx]
           self.current_prize = [current_prize["position"]["x"], current_prize["position"]["y"], 
                                 current_prize["position"]["z"], CLOSED_CLAW_DISTANCE]
         else:
@@ -101,12 +90,12 @@ class VisualizePrizes(Node):
             prize = Marker()
             prize.header.stamp = self.get_clock().now().to_msg()
             prize.header.frame_id = "bin"
-            prize.id = self.current_prize_id
+            prize.id = self.current_prize_idx
             prize.action = 2    # 2 -> deletes an object
             self.marker_publisher_.publish(prize)
 
             # Update current prize
-            self.current_prize_id += 1
+            self.current_prize_idx += 1
             self._update_current_prize_being_picked()
             
 
