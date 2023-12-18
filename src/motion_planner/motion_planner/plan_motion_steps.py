@@ -28,15 +28,23 @@ class PlanMotionSteps(Node):
         
         self.get_logger().info(f"{self.prize_data = }")
 
-    def parse_and_sort_prize_data(self):
+        self._parse_and_sort_prize_data()
+
+    def _parse_and_sort_prize_data(self):
         '''
             Sorts prize data in order from highest in the bin to lowest in the bin and appends 
             custom prize objects to a global list in said order.
         '''
+        
+        z_values_dict = {}
 
         for i in range(len(self.prize_data)):
-            prize_object = self.make_prize_object(self.prize_data[i], i)
-            self.prize_objects.append(prize_object)
+            # prize_dict = { prize z value : (prize data, prize index) }
+            prize_dict = {self.prize_data[i]["position"]["z"] : (self.prize_data[i], i)}
+            z_values_dict.update(prize_dict)
+
+        z_values_dict_sorted = dict(sorted(z_values_dict.items(), reverse=True))
+        self.prize_objects = [self.make_prize_object(prize_data[0], prize_data[1]) for prize_data in z_values_dict_sorted.values()]
 
     def make_prize_object(self, prize_data : dict, index):
         centroid = Point(x = prize_data["position"]["x"],
@@ -55,7 +63,7 @@ class PlanMotionSteps(Node):
         starting_state = StartState()
         ending_state = DropoffStandoffState()
 
-        for prize in self.prize_objects:
+        for order_idx, prize in enumerate(self.prize_objects):
 
             self.get_logger().info(f"{prize = }")
             prize_planner = MotionPlan(prize=prize, starting_state=starting_state)
@@ -70,12 +78,12 @@ class PlanMotionSteps(Node):
             
             self.get_logger().info(f"{step_data = }")
 
-            self._make_json_object(data=step_data)
+            self._make_json_object(data=step_data, order_index=order_idx)
 
             starting_state = ending_state
 
-    def _make_json_object(self, data: dict):
-        json_file_name = f'step_data_prize_{data["prize_picked"]}.json'
+    def _make_json_object(self, data: dict, order_index: int):
+        json_file_name = f'step_data_prize_{order_index}.json'
 
         full_path = self.json_path + json_file_name
 
