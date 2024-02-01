@@ -1,11 +1,11 @@
-# ros2_challenge
+# Autonomous Motion Planner for Claw Machine
 
 ## This challenge uses ROS2 Foxy to create a motion plan for a claw arm that picks up and drops off prizes from a bin.
 
 ### Setup Instructions
-`git clone https://github.com/Anna-LeeMcLean/ros2_challenge.git`
+`git clone https://github.com/Anna-LeeMcLean/claw_machine_motion_planner.git`
 
-`cd ros2_challenge`
+`cd claw_machine_motion_planner`
 
 `colcon build`
 
