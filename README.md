@@ -32,7 +32,7 @@ The output json files for each prize are called 'step_data_prize_[i].json' with 
 
 ### Visualization Node Execution
 
-The workspace also holds packages which allows for visualization of the robot arm picking up and dropping off prizes. Launch instructions and a video is provided below.
+The workspace also holds packages which allows for visualization of the robot arm picking up and dropping off prizes. Launch instructions and a video are provided below.
 
 `ros2 launch state_visualizer claw_arm_scene.launch.py`
 
